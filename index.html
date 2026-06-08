@@ -35,7 +35,6 @@
         }
     </style>
 
-    <!-- Import Map para carregar o Three.js via CDN sem precisar instalar nada -->
     <script type="importmap">
         {
             "imports": {
@@ -59,7 +58,7 @@
         scene.background = new THREE.Color(0x87CEEB); 
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(60, 40, 60); // Posição alta para ver a cidade de cima
+        camera.position.set(80, 50, 80); // Afastei um pouco mais a câmera caso a cidade seja grande
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -70,33 +69,32 @@
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Impede a câmera de passar para debaixo do chão
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; 
 
-        // 3. Iluminação (Fundamental para o estilo Cartoon/Low-poly)
+        // 3. Iluminação estilo Cartoon
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
 
         const sunLight = new THREE.DirectionalLight(0xffffff, 0.6);
-        sunLight.position.set(30, 60, 30);
+        sunLight.position.set(40, 80, 40);
         sunLight.castShadow = true;
         scene.add(sunLight);
 
-        // 4. Carregar o Modelo 3D da Cidade
+        // 4. Carregar o Modelo 3D correto (city2.glb)
         const loader = new GLTFLoader();
         const loaderElement = document.getElementById('loader');
 
-        // IMPORTANTE: Altere 'scene.gltf' se o arquivo dentro da pasta source tiver outro nome!
-        const nomeDoArquivoGLTF = 'scene.gltf'; 
+        // CORREÇÃO AQUI: Nome exato do seu arquivo atualizado
+        const nomeDoArquivo = 'city2.glb'; 
 
-        // Define a pasta de entrada do modelo. O Three.js buscará as texturas na pasta 'textures' automaticamente se o arquivo referenciar '../textures/'
         loader.setPath('source/'); 
         
-        loader.load(nomeDoArquivoGLTF, (gltf) => {
+        loader.load(nomeDoArquivo, (gltf) => {
             const city = gltf.scene;
             
-            // Ativa o recebimento de luz e sombras em todas as partes da cidade
+            // Ativa sombras nos objetos da cidade
             city.traverse((node) => {
-                if (node.isMesh && node.material) {
+                if (node.isMesh) {
                     node.castShadow = true;
                     node.receiveShadow = true;
                 }
@@ -105,7 +103,7 @@
             city.position.set(0, 0, 0); 
             scene.add(city);
 
-            // Esconde a tela de carregamento suavemente
+            // Esconde a tela de carregamento
             if (loaderElement) {
                 loaderElement.style.opacity = '0';
                 setTimeout(() => loaderElement.remove(), 500);
@@ -117,9 +115,9 @@
                 loaderElement.innerText = `Carregando Cidade: ${progresso}%`;
             }
         }, (error) => {
-            console.error('Erro ao carregar o modelo ou texturas:', error);
+            console.error('Erro ao carregar o modelo:', error);
             if (loaderElement) {
-                loaderElement.innerText = "Erro ao carregar o mundo. Verifique as pastas source e textures!";
+                loaderElement.innerText = "Erro ao encontrar o arquivo city2.glb dentro da pasta source!";
             }
         });
 
@@ -130,7 +128,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // 6. Loop de Renderização contínuo
+        // 6. Loop de Renderização
         function animate() {
             requestAnimationFrame(animate);
             controls.update(); 
